@@ -1,30 +1,44 @@
 import inspect
-from typing import Callable, Any, Union
+from typing import Callable, Any, Union, Awaitable
 from contextvars import ContextVar
+import asyncio
 
 
 def std_log_function(message: str, prefix: str, indentation: int):
     print((f"[{prefix}] " if prefix else "") + ("  " * indentation) + message)
 
 
-def log_decorator(message: Union[Any, Callable[[tuple, dict], Any]]):
+def log_decorator(message_or_func: Union[Any, Union[Callable[[tuple, dict], Any]], Awaitable]):
     """
     Returns a decorator that wraps a logger around a function.
 
-    :type message: Can be ether a message (Any) or a function to which the arguments are passed and which returns a
-        message.
+    :type message_or_func: Can be ether a message (Any) or a function to which the arguments are passed and which
+        returns amessage.
     """
-    def decorator(func):
-        def wrapper(*args, **kwargs):
-            if isinstance(message, Callable):
-                func_args = inspect.getfullargspec(func)[0]
-                assigned_args = {key: value for key, value in zip(func_args, args)} | kwargs
 
-                message_ = message(assigned_args)
-            else:
-                message_ = message
-            with log(message_):
-                func(*args, **kwargs)
+    def decorator(func):
+        if inspect.isawaitable(message_or_func):
+            async def wrapper(*args, **kwargs):
+                if isinstance(message_or_func, Callable):
+                    func_args = inspect.getfullargspec(func)[0]
+                    assigned_args = {key: value for key, value in zip(func_args, args)} | kwargs
+
+                    message_ = await message_or_func(assigned_args)
+                else:
+                    message_ = message_or_func
+                with log(message_):
+                    func(*args, **kwargs)
+        else:
+            def wrapper(*args, **kwargs):
+                if isinstance(message_or_func, Callable):
+                    func_args = inspect.getfullargspec(func)[0]
+                    assigned_args = {key: value for key, value in zip(func_args, args)} | kwargs
+
+                    message_ = message_or_func(assigned_args)
+                else:
+                    message_ = message_or_func
+                with log(message_):
+                    func(*args, **kwargs)
 
         return wrapper
 
