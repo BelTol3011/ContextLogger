@@ -6,6 +6,17 @@ def std_log_function(message: str, prefix: str, indentation: int):
     print((f"[{prefix}] " if prefix else "") + ("  " * indentation) + message)
 
 
+def log_decorator(message):
+    def decorator(func):
+        def wrapper():
+            with log(message):
+                func()
+
+        return wrapper
+
+    return decorator
+
+
 def log(message):
     return logger_contextvar.get().log(message)
 

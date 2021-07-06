@@ -1,6 +1,7 @@
-from context_logger import Logger, log
+from context_logger import *
 
 
+@log_decorator("some other function")
 def some_other_function():
     log("Probably important")
     with log("Yea vewy impoatant"):
