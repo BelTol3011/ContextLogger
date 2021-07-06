@@ -1,4 +1,4 @@
-from advanced_logger import Logger, log
+from context_logger import Logger, log
 
 
 def some_other_function():
