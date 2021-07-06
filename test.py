@@ -1,7 +1,7 @@
 from context_logger import *
 
 
-@log_decorator(lambda args, _: f"x = {args[0]}")
+@log_decorator(lambda args: f"x = {args['x']}")
 def prints_args_in_log(x):
     log(f"Should have printed x={x}")
 

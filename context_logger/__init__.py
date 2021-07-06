@@ -1,3 +1,4 @@
+import inspect
 from typing import Callable, Any, Union
 from contextvars import ContextVar
 
@@ -15,8 +16,13 @@ def log_decorator(message: Union[Any, Callable[[tuple, dict], Any]]):
     """
     def decorator(func):
         def wrapper(*args, **kwargs):
-            message_ = message(args, kwargs) if isinstance(message, Callable) else message
+            if isinstance(message, Callable):
+                func_args = inspect.getfullargspec(func)[0]
+                assigned_args = {key: value for key, value in zip(func_args, args)} | kwargs
 
+                message_ = message(assigned_args)
+            else:
+                message_ = message
             with log(message_):
                 func(*args, **kwargs)
 
