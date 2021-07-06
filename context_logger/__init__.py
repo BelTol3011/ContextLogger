@@ -1,4 +1,4 @@
-from typing import Callable, Any
+from typing import Callable, Any, Union
 from contextvars import ContextVar
 
 
@@ -6,11 +6,19 @@ def std_log_function(message: str, prefix: str, indentation: int):
     print((f"[{prefix}] " if prefix else "") + ("  " * indentation) + message)
 
 
-def log_decorator(message):
+def log_decorator(message: Union[Any, Callable[[tuple, dict], Any]]):
+    """
+    Returns a decorator that wraps a logger around a function.
+
+    :type message: Can be ether a message (Any) or a function to which the arguments are passed and which returns a
+        message.
+    """
     def decorator(func):
-        def wrapper():
-            with log(message):
-                func()
+        def wrapper(*args, **kwargs):
+            message_ = message(args, kwargs) if isinstance(message, Callable) else message
+
+            with log(message_):
+                func(*args, **kwargs)
 
         return wrapper
 
