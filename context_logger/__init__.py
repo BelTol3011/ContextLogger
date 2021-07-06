@@ -8,7 +8,7 @@ def std_log_function(message: str, prefix: str, indentation: int):
     print((f"[{prefix}] " if prefix else "") + ("  " * indentation) + message)
 
 
-def log_decorator(message_or_func: Union[Any, Union[Callable[[tuple, dict], Any]], Awaitable]):
+def log_decorator(message_or_func: Union[Any, Union[Callable[[tuple, dict], Any]]]):
     """
     Returns a decorator that wraps a logger around a function.
 
@@ -16,29 +16,29 @@ def log_decorator(message_or_func: Union[Any, Union[Callable[[tuple, dict], Any]
         returns amessage.
     """
 
-    def decorator(func):
-        if inspect.isawaitable(message_or_func):
+    def decorator(decorated_func):
+        if inspect.iscoroutinefunction(decorated_func):
             async def wrapper(*args, **kwargs):
                 if isinstance(message_or_func, Callable):
-                    func_args = inspect.getfullargspec(func)[0]
-                    assigned_args = {key: value for key, value in zip(func_args, args)} | kwargs
-
-                    message_ = await message_or_func(assigned_args)
-                else:
-                    message_ = message_or_func
-                with log(message_):
-                    func(*args, **kwargs)
-        else:
-            def wrapper(*args, **kwargs):
-                if isinstance(message_or_func, Callable):
-                    func_args = inspect.getfullargspec(func)[0]
+                    func_args = inspect.getfullargspec(decorated_func)[0]
                     assigned_args = {key: value for key, value in zip(func_args, args)} | kwargs
 
                     message_ = message_or_func(assigned_args)
                 else:
                     message_ = message_or_func
                 with log(message_):
-                    func(*args, **kwargs)
+                    await decorated_func(*args, **kwargs)
+        else:
+            def wrapper(*args, **kwargs):
+                if isinstance(message_or_func, Callable):
+                    func_args = inspect.getfullargspec(decorated_func)[0]
+                    assigned_args = {key: value for key, value in zip(func_args, args)} | kwargs
+
+                    message_ = message_or_func(assigned_args)
+                else:
+                    message_ = message_or_func
+                with log(message_):
+                    decorated_func(*args, **kwargs)
 
         return wrapper
 
