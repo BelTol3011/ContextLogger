@@ -1,11 +1,10 @@
 import inspect
 from typing import Callable, Any, Union, Awaitable
 from contextvars import ContextVar
-import asyncio
 
 
 def std_log_function(message: str, prefix: str, indentation: int):
-    print((f"[{prefix}] " if prefix else "") + ("  " * indentation) + message)
+    print((f"[{prefix}] " if prefix else "") + (" " * indentation) + message)
 
 
 def log_decorator(message_or_func: Union[Any, Union[Callable[[tuple, dict], Any]]]):
@@ -71,4 +70,4 @@ class Logger:
         self._indentation -= 1
 
 
-logger_contextvar: ContextVar[Logger] = ContextVar("__advanced_logger_context_var__", default=Logger("GLOBAL"))
+logger_contextvar: ContextVar[Logger] = ContextVar("__context_logger_var__", default=Logger("GLOBAL"))
