@@ -12,7 +12,7 @@ def log_decorator(message_or_func: Union[Any, Union[Callable[[tuple, dict], Any]
     Returns a decorator that wraps a logger around a function.
 
     :type message_or_func: Can be ether a message (Any) or a function to which the arguments are passed and which
-        returns amessage.
+        returns a message.
     """
 
     def decorator(decorated_func):
@@ -44,8 +44,12 @@ def log_decorator(message_or_func: Union[Any, Union[Callable[[tuple, dict], Any]
     return decorator
 
 
+def get_current_logger():
+    return logger_contextvar.get()
+
+
 def log(message):
-    return logger_contextvar.get().log(message)
+    return get_current_logger().log(message)
 
 
 class Logger:
