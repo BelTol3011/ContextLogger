@@ -1,6 +1,6 @@
 import inspect
-from typing import Callable, Any, Union, Awaitable
 from contextvars import ContextVar
+from typing import Any, Callable, Union
 
 
 def std_log_function(message: str, prefix: str, indentation: int):
@@ -58,20 +58,25 @@ class Logger:
         self.log_function = log_function
         self.prefix = prefix
         self._indentation = indentation
+        self.prev_logger: Logger
 
     def log(self, message):
         self.log_function(message, self.prefix, self._indentation)
 
-        return self
+        return self.copy()
+
+    def copy(self) -> "Logger":
+        return Logger(self.prefix, self.log_function, indentation=self._indentation + 1)
 
     def __enter__(self):
-        if logger_contextvar.get() == self:
-            self._indentation += 1
-        else:
-            logger_contextvar.set(self)
+        self.prev_logger = get_current_logger()
+
+        logger_contextvar.set(self)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._indentation -= 1
+        logger_contextvar.set(self.prev_logger)
 
 
-logger_contextvar: ContextVar[Logger] = ContextVar("__context_logger_var__", default=Logger("GLOBAL"))
+global_logger = Logger("GLOBAL")
+logger_contextvar: ContextVar[Logger] = ContextVar("__context_logger_var__", default=global_logger)
