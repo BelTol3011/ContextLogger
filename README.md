@@ -1,4 +1,4 @@
-# ContextLogger
+# context_logger
 A logger library that is based on the current context.
 
 ## Usage
