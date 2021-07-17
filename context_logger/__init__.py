@@ -57,16 +57,22 @@ class Logger:
                  indentation: int = 0):
         self.log_function = log_function
         self.prefix = prefix
-        self._indentation = indentation
+        self.indentation = indentation
         self.prev_logger: Logger
 
     def log(self, message):
-        self.log_function(message, self.prefix, self._indentation)
-
-        return self.copy()
+        if isinstance(message, str) and message.endswith(":"):
+            self.log_function(message[:-1], self.prefix, self.indentation)
+            self.indentation += 1
+        elif isinstance(message, str) and message.startswith(":"):
+            self.log_function(message[1:], self.prefix, self.indentation)
+            self.indentation -= 1
+        else:
+            self.log_function(message, self.prefix, self.indentation)
+            return self.copy()
 
     def copy(self) -> "Logger":
-        return Logger(self.prefix, self.log_function, indentation=self._indentation + 1)
+        return Logger(self.prefix, self.log_function, indentation=self.indentation + 1)
 
     def __enter__(self):
         self.prev_logger = get_current_logger()
@@ -74,7 +80,7 @@ class Logger:
         logger_contextvar.set(self)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self._indentation -= 1
+        self.indentation -= 1
         logger_contextvar.set(self.prev_logger)
 
 

@@ -20,6 +20,9 @@ def main():
     logger = Logger("Not global anymore")
     with logger:
         log("Something")
+        log("This also indents:")
+        log("should be indented")
+        log(":finished")
         log("Another thing")
         with log("SOmething elese"):
             some_other_function()
