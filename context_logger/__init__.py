@@ -65,8 +65,8 @@ class Logger:
             self.log_function(message[:-1], self.prefix, self.indentation)
             self.indentation += 1
         elif isinstance(message, str) and message.startswith(":"):
-            self.log_function(message[1:], self.prefix, self.indentation)
             self.indentation -= 1
+            self.log_function(message[1:], self.prefix, self.indentation)
         else:
             self.log_function(message, self.prefix, self.indentation)
             return self.copy()
