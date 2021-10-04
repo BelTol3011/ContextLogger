@@ -26,7 +26,10 @@ def main():
         log("This also indents:")
         log("should be indented")
         log(":finished")
-        log("Another thing")
+        log("indent again:")
+        log(":now you can do this:")
+        log("wow")
+        log(":Another thing")
         with log("Something else"):
             log("in context manager")
             some_other_function()

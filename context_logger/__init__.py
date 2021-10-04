@@ -97,16 +97,21 @@ class Logger:
 
     def log(self, message):
         self.nlist[-1] += 1
-
-        if isinstance(message, str) and message.endswith(":"):
-            self.log_function(message[:-1], self.prefix, self.nlist, self.indent_type)
-            self.indent()
-        elif isinstance(message, str) and message.startswith(":"):
+        print(self.nlist)
+        if message.startswith(":"):
             self.deindent()
-            self.log_function(message[1:], self.prefix, self.nlist, self.indent_type)
-        else:
-            self.log_function(message, self.prefix, self.nlist, self.indent_type)
-            return self.copy()
+            message = message[1:]
+
+        end_indent = isinstance(message, str) and message.endswith(":")
+        if end_indent:
+            message = message[:-1]
+
+        self.log_function(message, self.prefix, self.nlist, self.indent_type)
+
+        if end_indent:
+            self.indent()
+
+        return self.copy()
 
     def copy(self) -> "Logger":
         return Logger(self.prefix, self.log_function, nlist=self.nlist + [0], indent=self.indent_type)
