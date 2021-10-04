@@ -97,7 +97,6 @@ class Logger:
 
     def log(self, message):
         self.nlist[-1] += 1
-        print(self.nlist)
         if message.startswith(":"):
             self.deindent()
             message = message[1:]
