@@ -106,7 +106,7 @@ class Logger:
         if end_indent:
             message = message[:-1]
 
-        if message:
+        if message and message != " ":
             self.log_function(message, self.prefix, self.nlist, self.indent_type)
 
         if end_indent:
