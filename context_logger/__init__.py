@@ -106,7 +106,6 @@ class Logger:
         del self.nlist[-1]
 
     def log(self, message, key: Callable[[Any], str] = str):
-        self.nlist[-1] += 1
 
         str_message = key(message)
 
@@ -114,6 +113,7 @@ class Logger:
             self.deindent()
 
         if str_message and str_message != " ":
+            self.nlist[-1] += 1
             self.log_function(message, self.prefix, self.nlist, self.indent_type)
 
         if str_message.endswith(":"):
