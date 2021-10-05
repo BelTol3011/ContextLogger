@@ -41,8 +41,8 @@ def log_decorator(message_or_func: Union[Any, Union[Callable[[dict], Any]]]):
     return decorator
 
 
-def log(message):
-    return get_current_logger().log(message)
+def log(message, key: Callable[[Any], str] = str):
+    return get_current_logger().log(message, key=key)
 
 
 class BaseIndent(abc.ABC):
@@ -74,8 +74,18 @@ STD_SPACE_INDENT = SpaceIndent()
 STD_NUMBERED_INDENT = NumberedIndent()
 
 
+def strip_colons(string: str) -> str:
+    if string.startswith(":"):
+        string = string[1:]
+
+    if string.endswith(":"):
+        string = string[:-1]
+
+    return string
+
+
 def std_log_function(message: str, prefix: str, nlist: list[int], indent: BaseIndent = STD_SPACE_INDENT):
-    print((f"[{prefix}] " if prefix else "") + indent(nlist) + message)
+    print((f"[{prefix}] " if prefix else "") + indent(nlist) + strip_colons(message))
 
 
 class Logger:
@@ -95,20 +105,18 @@ class Logger:
     def deindent(self):
         del self.nlist[-1]
 
-    def log(self, message):
+    def log(self, message, key: Callable[[Any], str] = str):
         self.nlist[-1] += 1
-        if message.startswith(":"):
+
+        str_message = key(message)
+
+        if str_message.startswith(":"):
             self.deindent()
-            message = message[1:]
 
-        end_indent = isinstance(message, str) and message.endswith(":")
-        if end_indent:
-            message = message[:-1]
-
-        if message and message != " ":
+        if str_message and str_message != " ":
             self.log_function(message, self.prefix, self.nlist, self.indent_type)
 
-        if end_indent:
+        if str_message.endswith(":"):
             self.indent()
 
         return self.copy()
