@@ -39,8 +39,8 @@ def log_decorator(message_or_func: Union[Any, Union[Callable[[dict], Any]]], **k
     return decorator
 
 
-def log(message, key: Callable[[Any], str] = str, prefix: str = None):
-    return get_current_logger().log(message, key=key, prefix=prefix)
+def log(message, key: Callable[[Any], str] = str, dont_advance: bool = False, prefix: str = None):
+    return get_current_logger().log(message, key=key, dont_advance=dont_advance, prefix=prefix)
 
 
 class BaseIndent(abc.ABC):
@@ -105,7 +105,7 @@ class Logger:
     def deindent(self):
         nlist_contextvar.set(self.nlist[:-1])
 
-    def log(self, message, key: Callable[[Any], str] = str, prefix: str = None):
+    def log(self, message, key: Callable[[Any], str] = str, dont_advance: bool = False, prefix: str = None):
 
         str_message = key(message)
 
@@ -113,7 +113,8 @@ class Logger:
             self.deindent()
 
         if str_message and str_message != " ":
-            self.nlist[-1] += 1
+            if not dont_advance:
+                self.nlist[-1] += 1
             self.log_function(message, self.prefix if prefix is None else prefix, self.nlist, self.indent_type)
 
         if str_message.endswith(":"):
