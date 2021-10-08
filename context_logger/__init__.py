@@ -100,7 +100,7 @@ class Logger:
         return nlist_contextvar.get()
 
     def indent(self):
-        self.nlist.append(1)
+        self.nlist.append(0)
 
     def deindent(self):
         nlist_contextvar.set(self.nlist[:-1])
