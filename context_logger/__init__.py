@@ -4,7 +4,7 @@ from contextvars import ContextVar
 from typing import Any, Callable, Union, Optional
 
 
-def log_decorator(message_or_func: Union[Any, Union[Callable[[dict], Any]]]):
+def log_decorator(message_or_func: Union[Any, Union[Callable[[dict], Any]]], prefix: str = None):
     """
     Returns a decorator that wraps a logger around a function.
 
@@ -39,8 +39,8 @@ def log_decorator(message_or_func: Union[Any, Union[Callable[[dict], Any]]]):
     return decorator
 
 
-def log(message, key: Callable[[Any], str] = str):
-    return get_current_logger().log(message, key=key)
+def log(message, key: Callable[[Any], str] = str, prefix: str = None):
+    return get_current_logger().log(message, key=key, prefix=prefix)
 
 
 class BaseIndent(abc.ABC):
@@ -105,7 +105,7 @@ class Logger:
     def deindent(self):
         nlist_contextvar.set(self.nlist[:-1])
 
-    def log(self, message, key: Callable[[Any], str] = str):
+    def log(self, message, key: Callable[[Any], str] = str, prefix: str = None):
 
         str_message = key(message)
 
@@ -114,7 +114,7 @@ class Logger:
 
         if str_message and str_message != " ":
             self.nlist[-1] += 1
-            self.log_function(message, self.prefix, self.nlist, self.indent_type)
+            self.log_function(message, self.prefix if prefix is None else prefix, self.nlist, self.indent_type)
 
         if str_message.endswith(":"):
             self.indent()
