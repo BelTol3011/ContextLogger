@@ -9,7 +9,7 @@ def prints_args_in_log(x, y=2):
 @log_decorator("this is a log decorator")
 def some_other_function():
     log("probably important")
-    with log("very important"):
+    with Logger("different prefix"):
         log("asdasd")
         log("very very important")
         prints_args_in_log(11)
