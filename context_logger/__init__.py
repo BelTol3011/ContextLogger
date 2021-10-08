@@ -82,13 +82,13 @@ def strip_colons(string: str) -> str:
     return string
 
 
-def std_log_function(message: str, prefix: str, nlist: list[int], indent: BaseIndent = STD_SPACE_INDENT):
-    print((f"[{prefix}] " if prefix else "") + indent(nlist) + message)
+def std_log_function(message_str: str, message_raw: Any, prefix: str, nlist: list[int], indent: BaseIndent = STD_SPACE_INDENT):
+    print((f"[{prefix}] " if prefix else "") + indent(nlist) + message_str)
 
 
 class Logger:
     def __init__(self, prefix,
-                 log_function: Callable[[Any, Any, list[int], Optional[BaseIndent]], None] = std_log_function,
+                 log_function: Callable[[str, Any, Any, list[int], Optional[BaseIndent]], None] = std_log_function,
                  indent: BaseIndent = STD_NUMBERED_INDENT):
         self.log_function = log_function
         self.prefix = prefix
@@ -116,7 +116,7 @@ class Logger:
         if colon_stripped and colon_stripped != " ":
             if not dont_advance:
                 self.nlist[-1] += 1
-            self.log_function(colon_stripped, self.prefix if prefix is None else prefix, self.nlist, self.indent_type)
+            self.log_function(colon_stripped, message, self.prefix if prefix is None else prefix, self.nlist, self.indent_type)
 
         if str_message.endswith(":"):
             self.indent()
