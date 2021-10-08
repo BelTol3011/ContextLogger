@@ -39,7 +39,7 @@ def log_decorator(message_or_func: Union[Any, Union[Callable[[dict], Any]]], **k
     return decorator
 
 
-def log(message, key: Callable[[Any], str] = str, dont_advance: bool = False, prefix: str = None):
+def log(message, key: Callable[[Any], str] = lambda x: x, dont_advance: bool = False, prefix: str = None):
     return get_current_logger().log(message, key=key, dont_advance=dont_advance, prefix=prefix)
 
 
@@ -83,7 +83,7 @@ def strip_colons(string: str) -> str:
 
 
 def std_log_function(message: str, prefix: str, nlist: list[int], indent: BaseIndent = STD_SPACE_INDENT):
-    print((f"[{prefix}] " if prefix else "") + indent(nlist) + strip_colons(message))
+    print((f"[{prefix}] " if prefix else "") + indent(nlist) + message)
 
 
 class Logger:
@@ -105,17 +105,18 @@ class Logger:
     def deindent(self):
         nlist_contextvar.set(self.nlist[:-1])
 
-    def log(self, message, key: Callable[[Any], str] = str, dont_advance: bool = False, prefix: str = None):
+    def log(self, message, key: Callable[[Any], str] = lambda x: x, dont_advance: bool = False, prefix: str = None):
 
         str_message = key(message)
 
         if str_message.startswith(":"):
             self.deindent()
 
-        if str_message and str_message != " ":
+        colon_stripped = strip_colons(str_message)
+        if colon_stripped and colon_stripped != " ":
             if not dont_advance:
                 self.nlist[-1] += 1
-            self.log_function(message, self.prefix if prefix is None else prefix, self.nlist, self.indent_type)
+            self.log_function(colon_stripped, self.prefix if prefix is None else prefix, self.nlist, self.indent_type)
 
         if str_message.endswith(":"):
             self.indent()
