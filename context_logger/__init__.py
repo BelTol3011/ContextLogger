@@ -89,19 +89,21 @@ def std_log_function(message: str, prefix: str, nlist: list[int], indent: BaseIn
 class Logger:
     def __init__(self, prefix,
                  log_function: Callable[[Any, Any, list[int], Optional[BaseIndent]], None] = std_log_function,
-                 indent: BaseIndent = STD_SPACE_INDENT, *,
-                 nlist: list[int] = None):
+                 indent: BaseIndent = STD_NUMBERED_INDENT):
         self.log_function = log_function
         self.prefix = prefix
-        self.nlist = nlist if nlist is not None else [0]
         self.indent_type = indent
         self.prev_logger: Logger
 
+    @property
+    def nlist(self):
+        return nlist_contextvar.get()
+
     def indent(self):
-        self.nlist.append(0)
+        self.nlist.append(1)
 
     def deindent(self):
-        del self.nlist[-1]
+        nlist_contextvar.set(self.nlist[:-1])
 
     def log(self, message, key: Callable[[Any], str] = str):
 
@@ -117,15 +119,13 @@ class Logger:
         if str_message.endswith(":"):
             self.indent()
 
-        return self.copy()
-
-    def copy(self) -> "Logger":
-        return Logger(self.prefix, self.log_function, nlist=self.nlist + [0], indent=self.indent_type)
+        return self
 
     def __enter__(self):
         self.prev_logger = get_current_logger()
 
         logger_contextvar.set(self)
+        self.indent()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.deindent()
@@ -133,5 +133,8 @@ class Logger:
 
 
 global_logger = Logger("GLOBAL")
-logger_contextvar: ContextVar[Logger] = ContextVar("__context_logger_var__", default=global_logger)
+logger_contextvar: ContextVar[Logger] = ContextVar("__context_logger_logger__", default=global_logger)
+
+nlist_contextvar: ContextVar[list[int]] = ContextVar("__context_logger_nlist__", default=[1])
+
 get_current_logger: Callable[[], Logger] = logger_contextvar.get
