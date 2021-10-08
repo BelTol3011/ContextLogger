@@ -93,7 +93,7 @@ class Logger:
         self.log_function = log_function
         self.prefix = prefix
         self.indent_type = indent
-        self.prev_loggers: list[Logger] = []
+        self.prev_loggers: list[tuple[Logger, list[int]]] = []
 
     @property
     def nlist(self):
@@ -122,7 +122,7 @@ class Logger:
         return self
 
     def __enter__(self):
-        self.prev_loggers.append(get_current_logger())
+        self.prev_loggers.append((logger_contextvar.get(), nlist_contextvar.get()[:]))
 
         logger_contextvar.set(self)
         self.indent()
@@ -130,14 +130,15 @@ class Logger:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.deindent()
 
-        *self.prev_loggers, logger = self.prev_loggers
+        *self.prev_loggers, (logger, nlist) = self.prev_loggers
 
         logger_contextvar.set(logger)
+        nlist_contextvar.set(nlist)
 
 
 global_logger = Logger("GLOBAL")
 logger_contextvar: ContextVar[Logger] = ContextVar("__context_logger_logger__", default=global_logger)
 
-nlist_contextvar: ContextVar[list[int]] = ContextVar("__context_logger_nlist__", default=[1])
+nlist_contextvar: ContextVar[list[int]] = ContextVar("__context_logger_nlist__", default=[0])
 
 get_current_logger: Callable[[], Logger] = logger_contextvar.get
