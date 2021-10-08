@@ -111,7 +111,7 @@ class Logger:
             self.deindent()
 
         if str_message and str_message != " ":
-            self.nlist[-1] += 1
+            self.indent()
             self.log_function(message, self.prefix, self.nlist, self.indent_type)
 
         if str_message.endswith(":"):
