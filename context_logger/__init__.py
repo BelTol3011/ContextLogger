@@ -4,7 +4,7 @@ from contextvars import ContextVar
 from typing import Any, Callable, Union, Optional
 
 
-def log_decorator(message_or_func: Union[Any, Union[Callable[[dict], Any]]], prefix: str = None):
+def log_decorator(message_or_func: Union[Any, Union[Callable[[dict], Any]]], **kwargs_decorator):
     """
     Returns a decorator that wraps a logger around a function.
 
@@ -21,7 +21,7 @@ def log_decorator(message_or_func: Union[Any, Union[Callable[[dict], Any]]], pre
                     message_ = message_or_func(assigned_args)
                 else:
                     message_ = message_or_func
-                with log(message_):
+                with log(message_, **kwargs_decorator):
                     return await decorated_func(*args, **kwargs)
         else:
             def wrapper(*args, **kwargs):
@@ -31,7 +31,7 @@ def log_decorator(message_or_func: Union[Any, Union[Callable[[dict], Any]]], pre
                     message_ = message_or_func(assigned_args)
                 else:
                     message_ = message_or_func
-                with log(message_):
+                with log(message_, **kwargs_decorator):
                     return decorated_func(*args, **kwargs)
 
         return wrapper
