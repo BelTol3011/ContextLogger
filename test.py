@@ -6,37 +6,47 @@ def prints_args_in_log(x, y=2):
     log(f"Should have printed x={x}")
 
 
-@log_decorator("this is a log decorator")
+@log_decorator("Hi from a log_decorator.")
 def some_other_function():
-    log("probably important")
-    with Logger("different prefix"):
-        log("asdasd")
-        log("very very important")
-        prints_args_in_log(11)
-    log("finished now :)")
+    log("This is from inside the function.")
+    with Logger("diff. prefix"):
+        log("We now entered a logger with a different prefix")
+        log("Although we ")
+        log(":can deindent")
+        log(":too far,")
+
+    log("After the context manager ends, it is back to normal.")
 
 
 def main():
-    logger = Logger("Not global anymore")
+    logger = Logger("Not global")
 
-    log("still global?")
+    log("This should still be global.")
 
     with logger:
-        log("Something")
-        log("This also indents:")
-        log("should be indented")
-        log(":finished")
-        log("indent again:")
-        log(":now you can do this:")
-        log("wow")
-        log(":Another thing")
-        with log("Something else"):
-            log("in context manager")
-            some_other_function()
-            log("Still something else")
-        log("Ok finished")
+        log("Entered non-global logger.")
 
-    log("still??")
+        log("The following should be indented.:")
+
+        log("The following should be back to normal.")
+
+        log(":Normal.")
+
+        log("Indenting again::")
+
+        log("Indented.")
+
+        log(":This should be normal and following should be indented.:")
+
+        log("Test.")
+
+        log(":The following tests function calls.:")
+
+        with log("Function 1"):
+            some_other_function()
+
+        with log("Function 2"):
+            prints_args_in_log(11)
 
 
 log("This should be in global logger context.")
