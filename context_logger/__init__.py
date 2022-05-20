@@ -29,7 +29,7 @@ def log_decorator(message_or_func: Union[Any, Callable[[dict], Any]], **kwargs_d
         if inspect.iscoroutinefunction(decorated_func):
             async def wrapper(*args, **kwargs):
                 if isinstance(message_or_func, Callable):
-                    assigned_args = inspect.getcallargs(decorated_func, *args, *kwargs)
+                    assigned_args = inspect.getcallargs(decorated_func, *args, **kwargs)
 
                     message_ = message_or_func(assigned_args)
                 else:
@@ -41,7 +41,7 @@ def log_decorator(message_or_func: Union[Any, Callable[[dict], Any]], **kwargs_d
         else:
             def wrapper(*args, **kwargs):
                 if isinstance(message_or_func, Callable):
-                    assigned_args = inspect.getcallargs(decorated_func, *args, *kwargs)
+                    assigned_args = inspect.getcallargs(decorated_func, *args, **kwargs)
 
                     message_ = message_or_func(assigned_args)
                 else:
