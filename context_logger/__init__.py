@@ -3,21 +3,36 @@ import asyncio
 import inspect
 import warnings
 from contextvars import ContextVar, Context
-from typing import Any, Callable, Union, Optional, Awaitable
+from typing import Any, Callable, Union, Optional, ParamSpec, TypeVar
 
 
-def async_safe(decorated_corofunc):
-    async def reset_context(*args, **kwargs):
-        loggerstack_contextvar.set([loggerstack_contextvar.get()[-1]])
-        nlist_contextvar.set(get_current_nlist()[:])
+def safe(decorated_func):
+    if inspect.iscoroutinefunction(decorated_func):
+        async def reset_context(*args, **kwargs):
+            loggerstack_contextvar.set([loggerstack_contextvar.get()[-1]])
+            nlist_contextvar.set(get_current_nlist()[:])
 
-        return await decorated_corofunc(*args, **kwargs)
+            return await decorated_func(*args, **kwargs)
+    else:
+        def reset_context(*args, **kwargs):
+            # why the sync and async versions of this function are different puzzles me
 
+            prev_loggers = loggerstack_contextvar.get()[:]
+            prev_nlist = get_current_nlist()[:]
+
+            try:
+                return decorated_func(*args, **kwargs)
+            finally:
+                loggerstack_contextvar.set(prev_loggers)
+                nlist_contextvar.set(prev_nlist)
 
     return reset_context
 
 
-def log_decorator(message_or_func: Union[Any, Callable[[dict], Any]], **kwargs_decorator):
+async_safe = safe
+
+
+def log_decorator(message_or_func: Union[Any, Callable[[dict], Any]], safe_nlist=False, **log_args):
     """
     Returns a decorator that wraps a logger around a function.
 
@@ -35,9 +50,12 @@ def log_decorator(message_or_func: Union[Any, Callable[[dict], Any]], **kwargs_d
                 else:
                     message_ = message_or_func
 
-                log(message_, **kwargs_decorator)
+                log(message_, **log_args)
 
-                return await decorated_func(*args, **kwargs)
+                if safe_nlist:
+                    return await safe(decorated_func)(*args, **kwargs)
+                else:
+                    return await decorated_func(*args, **kwargs)
         else:
             def wrapper(*args, **kwargs):
                 if isinstance(message_or_func, Callable):
@@ -46,8 +64,11 @@ def log_decorator(message_or_func: Union[Any, Callable[[dict], Any]], **kwargs_d
                     message_ = message_or_func(assigned_args)
                 else:
                     message_ = message_or_func
-                with log(message_, **kwargs_decorator):
-                    return decorated_func(*args, **kwargs)
+                with log(message_, **log_args):
+                    if safe_nlist:
+                        return safe(decorated_func)(*args, **kwargs)
+                    else:
+                        return decorated_func(*args, **kwargs)
 
         return wrapper
 
